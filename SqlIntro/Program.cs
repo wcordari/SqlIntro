@@ -14,7 +14,8 @@ namespace SqlIntro
             var repo = new ProductRepository(new MySqlConnection(connectionString));
             foreach (var prod in repo.GetProducts())
             {
-                Console.WriteLine("Product Name:" + prod.Name + "" + prod.ListPrice);
+
+                Console.WriteLine("Product Name:" + prod.Name + "" + prod.ListPrice + prod.ModifiedDate.DayOfWeek);
             }
 
            
