@@ -70,18 +70,36 @@ namespace SqlIntro
         /// <param name="prod"></param>
         public void InsertProduct(Product prod)
         {
-            var cmd = _conn.CreateCommand();
-            cmd.CommandText = "Insert product set name = @name where id =@id";
-            var param = cmd.CreateParameter();
-            param.ParameterName = "name";
-            param.Value = prod.Name;
-            cmd.Parameters.AddWithValue("@name", prod.Name);
-            cmd.ExecuteNonQuery();
-        }
+            using (var conn = new MySqlConnection(_connectionString))
+            {
+                conn.Open();
+                var cmd = conn.CreateCommand();
 
-        public void Dispose()
-        {
-            _conn.Dispose();
+                var cText = "INSERT into product(" + string.Join(", ", prod.Params.Keys) + ")";
+
+                var valueKeys = prod.Params.Keys.Select(str => "@" + str);
+                cText += "values (" + String.Join(", ", valueKeys) + ")";
+
+                cmd.CommandText = cText;
+
+                foreach (var keyValue in prod.Params)
+                {
+                    cmd.Parameters.AddWithValue("@" + keyValue.Key, keyValue.Value);
+
+                }
+
+                ///var cmd = _conn.CreateCommand();
+                ///cmd.CommandText = "Insert product set name = @name where id =@id";
+                ///var param = cmd.CreateParameter();
+                ///param.ParameterName = "name";
+                ///param.Value = prod.Name;
+                ///cmd.Parameters.AddWithValue("@name", prod.Name);
+                cmd.ExecuteNonQuery();
+            }
+
+            public void Dispose()
+            {
+                _conn.Dispose();
+            }
         }
     }
-}
