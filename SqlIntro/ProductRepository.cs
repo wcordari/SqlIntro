@@ -7,34 +7,46 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using System.Configuration;
 
 namespace SqlIntro
 {
     public class ProductRepository : IDisposable
     {
+        public void Dispose()
+        {
+            _conn?.Dispose();
+        }
+
         private readonly MySqlConnection _conn;
+        private string _connectionString;
 
         public ProductRepository(MySqlConnection conn)
         {
             _conn = conn;
             _conn.Open();
         }
+
         /// <summary>
         /// Reads all the products from the products table
         /// </summary>
         /// <returns></returns>
         public IEnumerable<Product> GetProducts()
         {
-
-            var cmd = _conn.CreateCommand();
-            cmd.CommandText = "select * from Product";
-            var dr = cmd.ExecuteReader();
-            while (dr.Read())
+            using (var conn = new MySqlConnection(_connectionString))
             {
+                conn.Open();
+                var cmd = _conn.CreateCommand();
+                cmd.CommandText = "SELECT * FROM product";
+                var dr = cmd.ExecuteReader();
+                while (dr.Read())
+                {
                 yield return new Product
                 {
                     Name = dr["Name"].ToString(),
-                    ListPrice = (double)dr["ListPrice"]
+                    ProductId = (int)dr["PRoductId"],
+                    ListPrice = (double)dr["ListPrice"],
+                    ModifiedDate = (DateTime)dr["ModifiedDate"]
                 };
             }
         }
@@ -50,6 +62,7 @@ namespace SqlIntro
             cmd.ExecuteNonQuery();
 
         }
+
         /// <summary>
         /// Updates the Product in the database
         /// </summary>
@@ -64,11 +77,12 @@ namespace SqlIntro
             cmd.Parameters.AddWithValue("@id", prod.ProductId);
             cmd.ExecuteNonQuery();
         }
+
         /// <summary>
         /// Inserts a new Product into the database
         /// </summary>
         /// <param name="prod"></param>
-        public void InsertProduct(Product prod)
+         public void InsertProduct(Product prod)
         {
             using (var conn = new MySqlConnection(_connectionString))
             {
@@ -95,11 +109,9 @@ namespace SqlIntro
                 ///param.Value = prod.Name;
                 ///cmd.Parameters.AddWithValue("@name", prod.Name);
                 cmd.ExecuteNonQuery();
-            }
 
-            public void Dispose()
-            {
-                _conn.Dispose();
             }
         }
+
     }
+

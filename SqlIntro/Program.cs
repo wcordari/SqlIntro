@@ -11,30 +11,57 @@ namespace SqlIntro
         static void Main(string[] args)
         {
             var connectionString = "Server=localhost;Database=adventureworks;Uid=root;Pwd=huffmanhigh1;";
-            //get connectionString format from connectionstrings.com and change to match your database
-            var repo = new ProductRepository(new MySqlConnection(connectionString));
-            foreach (var prod in repo.GetProducts())
+            using (var conn = new MySqlConnection(connectionString)) ;
             {
-                Console.WriteLine("Product Name:" + prod.Name + "" + prod.ListPrice + prod.ModifiedDate.DayOfWeek);
-                
+
+                var repo = new DapperDB(conn);
+                var products = repo.GetProducts();
+                foreach (var prod in repo.GetProducts())
+                {
+                    Console.WriteLine("Product Name:" + prod.Name + "" + prod.ListPrice + prod.ModifiedDate.DayOfWeek);
+
+                }
+
+                repo.DeleteProduct(1);
+
+
+                Console.WriteLine("Should have deleted product");
+
+                var product = new Product
+                {
+                    ProductId = 2,
+                    Name = "Awesome Amazing Product"
+                };
+
+                repo.UpdateProduct(product);
+                Console.WriteLine("Should have updated the product" + product.ProductId);
+
+
+                {
+                    repo.InsertProduct(product);
+                    Console.WriteLine("Should INSERT into Product " + product.ProductId);
+
+                    //ProductId = 5,
+                    //Name = "Bike",
+                    //ProductNumber = "BR=1004",
+                    //Color = "Blue",
+                    //SafetyStockLevel = 1000,
+                    //ReorderPoint = 500,
+                    //StandardCost = 500,
+                    //ListPrice = 1025.36,
+
+
+                }
+
+
+
+
+
             }
-            
-            repo.DeleteProduct(1);
-            Console.WriteLine("Should have deleted product");
 
-            var product = new Product
-            {
-                ProductId = 2,
-                Name = "Awesome Amazing Product "
-            };
-
-            repo.UpdateProduct(product);
-            Console.WriteLine("Should have updated the product" + product.ProductId);
-
-            Console.ReadLine();
 
         }
 
-       
     }
 }
+    
